@@ -2,10 +2,10 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches: 
-      - main 
-      - feat/*
+  # push:
+  #   branches: 
+  #     - main 
+  #     - feat/*
 
 jobs:
   test:
