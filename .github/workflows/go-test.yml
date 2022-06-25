@@ -10,7 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: Update coverage badge
+    name: Go Test with Coverage
     steps:
       - name: Checkout
         uses: actions/checkout@v3
