@@ -6,58 +6,30 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_stein_getFullURL(t *testing.T) {
-	type fields struct {
-		url        string
-		httpClient *http.Client
-	}
-	type args struct {
-		path   string
-		params map[string]string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   string
-	}{
-		{
-			name: "should return the full url with expected input",
-			fields: fields{
-				url: "https://api.steinhq.com/v1/storages/[your-api-id]",
-			},
-			args: args{
-				path:   "Sheet1",
-				params: map[string]string{"offset": "0", "limit": "10"},
-			},
-			want: "https://api.steinhq.com/v1/storages/[your-api-id]/Sheet1?offset=0&limit=10",
-		},
-		{
-			name: "should remove slash on path prefix",
-			fields: fields{
-				url: "http://example.com",
-			},
-			args: args{
-				path:   "/sheetName",
-				params: map[string]string{},
-			},
-			want: "http://example.com/sheetName",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &stein{}
-			s.url = tt.fields.url
-			if got := s.getFullURL(tt.args.path, tt.args.params); got != tt.want {
-				t.Errorf("stein.getFullURL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	s := &stein{}
+
+	t.Run("should return the correct url", func(t *testing.T) {
+		s.url = "https://api.steinhq.com/v1/storages/[your-api-id]"
+		got := s.getFullURL("Sheet1", map[string]string{"offset": "4", "limit": "10"})
+		if !strings.HasPrefix(got, "https://api.steinhq.com/v1/storages/[your-api-id]/Sheet1") ||
+			!strings.Contains(got, "offset=4") || 
+			!strings.Contains(got, "limit=10") {
+			t.Errorf("stein.getFullURL() = %v, want %v", got, "https://api.steinhq.com/v1/storages/[your-api-id]/Sheet1?offset=0&limit=10")
+		}
+	})
+
+	t.Run("should remove slash on path prefix", func(t *testing.T) {
+		s.url = "https://api.steinhq.com/v1/storages/[your-api-id]"
+		got := s.getFullURL("/Sheet1", nil)
+		assert.Equal(t, "https://api.steinhq.com/v1/storages/[your-api-id]/Sheet1", got)
+	})
 }
 
 func Test_stein_addParams(t *testing.T) {
