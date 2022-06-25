@@ -10,6 +10,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ '1.14', '1.15', '1.16.x', '1.17', '1.18' ]
     name: Go Test with Coverage
     steps:
       - name: Checkout
@@ -18,10 +21,10 @@ jobs:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
           fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
 
-      - name: Setup go
+      - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: ${{ matrix.go-version }}
 
       - uses: actions/cache@v3
         with:
