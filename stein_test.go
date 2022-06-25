@@ -1,9 +1,7 @@
 package stein
 
 import (
-	"bytes"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -33,62 +31,22 @@ func Test_stein_getFullURL(t *testing.T) {
 }
 
 func Test_stein_addParams(t *testing.T) {
-	type args struct {
-		resource string
-		params   map[string]string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "should return the full url with zero params",
-			args: args{
-				resource: "http://url.com/sheetname",
-				params:   map[string]string{},
-			},
-			want: "http://url.com/sheetname",
-		},
-		{
-			name: "should return the valid url with mulitple params",
-			args: args{
-				resource: "http://url.com/sheetname",
-				params: map[string]string{
-					"limit": "10",
-					"sort":  "asc",
-				},
-			},
-			want: "http://url.com/sheetname?limit=10&sort=asc",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &stein{}
-			if got := s.addParams(tt.args.resource, tt.args.params); got != tt.want {
-				t.Errorf("stein.addParams() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	s := &stein{}
 
-type clientMock struct{}
+	t.Run("should return the full url with zero params", func(t *testing.T) {
+		got := s.addParams("http://url.com/sheetname", map[string]string{})
+		assert.Equal(t, "http://url.com/sheetname", got)
+	})
 
-func (c *clientMock) Do(req *http.Request) (*http.Response, error) {
-	jsonBody := `[{
-		"title": "Escort Warrior",
-		"url": "https://url.com/sheetname"
-	}, {
-		"title": "Bowblade Spirit",
-		"url": "https://url.com/sheetname"
-	}]`
-
-	resp := &http.Response{
-		StatusCode: 200,
-		Body:       ioutil.NopCloser(bytes.NewBufferString(jsonBody)),
-	}
-
-	return resp, nil
+	t.Run("should return the valid url with mulitple params", func(t *testing.T) {
+		got := s.addParams("http://url.com/sheetname", map[string]string{"offset": "4", "limit": "10"})
+		segment := strings.Split(got, "?")
+		assert.Equal(t, 2, len(segment))
+		assert.Equal(t, "http://url.com/sheetname", segment[0])
+		assert.Contains(t, segment[1], "offset=4")
+		assert.Contains(t, segment[1], "limit=10")
+	})
+	
 }
 
 func Test_stein_Get(t *testing.T) {
