@@ -79,8 +79,6 @@ func (s *stein) Get(sheet string, params SearchParams) ([]map[string]interface{}
 		resource = resource + "?" + queryParams 
 	}
 
-	fmt.Printf("resource: %s\n", resource)
-
 	resp, err := s.httpClient.Get(resource)
 	if err != nil {
 		return nil, err
