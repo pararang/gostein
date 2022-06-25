@@ -4,50 +4,10 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func Test_stein_getFullURL(t *testing.T) {
-	s := &stein{}
-
-	t.Run("should return the correct url", func(t *testing.T) {
-		s.url = "https://api.steinhq.com/v1/storages/[your-api-id]"
-		got := s.getFullURL("Sheet1", map[string]string{"offset": "4", "limit": "10"})
-		if !strings.HasPrefix(got, "https://api.steinhq.com/v1/storages/[your-api-id]/Sheet1") ||
-			!strings.Contains(got, "offset=4") || 
-			!strings.Contains(got, "limit=10") {
-			t.Errorf("stein.getFullURL() = %v, want %v", got, "https://api.steinhq.com/v1/storages/[your-api-id]/Sheet1?offset=0&limit=10")
-		}
-	})
-
-	t.Run("should remove slash on path prefix", func(t *testing.T) {
-		s.url = "https://api.steinhq.com/v1/storages/[your-api-id]"
-		got := s.getFullURL("/Sheet1", nil)
-		assert.Equal(t, "https://api.steinhq.com/v1/storages/[your-api-id]/Sheet1", got)
-	})
-}
-
-func Test_stein_addParams(t *testing.T) {
-	s := &stein{}
-
-	t.Run("should return the full url with zero params", func(t *testing.T) {
-		got := s.addParams("http://url.com/sheetname", map[string]string{})
-		assert.Equal(t, "http://url.com/sheetname", got)
-	})
-
-	t.Run("should return the valid url with mulitple params", func(t *testing.T) {
-		got := s.addParams("http://url.com/sheetname", map[string]string{"offset": "4", "limit": "10"})
-		segment := strings.Split(got, "?")
-		assert.Equal(t, 2, len(segment))
-		assert.Equal(t, "http://url.com/sheetname", segment[0])
-		assert.Contains(t, segment[1], "offset=4")
-		assert.Contains(t, segment[1], "limit=10")
-	})
-	
-}
 
 func Test_stein_Get(t *testing.T) {
 	t.Run("should return the correct response", func(t *testing.T) {
@@ -67,7 +27,7 @@ func Test_stein_Get(t *testing.T) {
 		defer ts.Close()
 
 		sc := New(ts.URL, nil)
-		resp, err := sc.Get("/sheetname", BasicQuery{})
+		resp, err := sc.Get("/sheetname", SearchParams{})
 		if err != nil {
 			t.Errorf("Error: %v", err)
 		}
@@ -87,7 +47,7 @@ func Test_stein_Get(t *testing.T) {
 		defer ts.Close()
 
 		sc := New(ts.URL, nil)
-		_, err := sc.Get("/sheetname", BasicQuery{})
+		_, err := sc.Get("/sheetname", SearchParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrNot2XX{}) {
 			t.Errorf("Expected ErrNot2XX, got %v", err)
@@ -105,10 +65,26 @@ func Test_stein_Get(t *testing.T) {
 		defer ts.Close()
 
 		sc := New(ts.URL, nil)
-		_, err := sc.Get("/sheetname", BasicQuery{})
+		_, err := sc.Get("/sheetname", SearchParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrDecodeJSON{}) {
 			t.Errorf("Expected ErrDecode, got %v", err)
 		}
+	})
+}
+
+func TestSearchParams_queryString(t *testing.T) {
+	t.Run("should return the correct query string", func(t *testing.T) {
+		params := SearchParams{
+			Offset: 20,
+			Limit: 10,
+			Conditions: map[string]string{
+				"column_1": "value_column_1",
+				"column_2": "value_column_2",
+			},
+		}
+
+		queryString := params.queryString()
+		assert.Equal(t, `offset=20&limit=10&search=%7B%22column_1%22%3A%22value_column_1%22%2C%22column_2%22%3A%22value_column_2%22%7D`, queryString)
 	})
 }

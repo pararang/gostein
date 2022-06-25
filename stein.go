@@ -5,17 +5,43 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
-type BasicQuery struct {
+type SearchParams struct {
 	Offset int64
 	Limit  int64
+	Conditions map[string]string
+}
+
+func (sp SearchParams) queryString() string {
+	queryString := ""
+	if sp.Offset > 0 {
+		queryString = queryString + fmt.Sprintf("offset=%d&", sp.Offset)
+	}
+
+	if sp.Limit > 0 {
+		queryString = queryString + fmt.Sprintf("limit=%d&", sp.Limit)
+	}
+
+	if len(sp.Conditions) > 0 {
+		jsonSearch, err := json.Marshal(sp.Conditions)
+		if err != nil {
+			return ""
+		}
+
+		querySearchJSON := url.QueryEscape(string(jsonSearch))
+
+		queryString = queryString + fmt.Sprintf("search=%s", querySearchJSON)
+	}
+
+	return strings.TrimSuffix(queryString, "&")
 }
 
 // Interface is the interface for the stein client
 type Interface interface {
-	Get(sheet string, basicQuery BasicQuery) ([]map[string]interface{}, error)
+	Get(sheet string, params SearchParams) ([]map[string]interface{}, error)
 }
 
 type stein struct {
@@ -31,36 +57,12 @@ func New(url string, httpClient *http.Client) Interface {
 		httpClient = http.DefaultClient
 	}
 
-	if strings.HasSuffix(url, "/") {
-		url = strings.TrimSuffix(url, "/")
-	}
+	url = removeSuffix(url, "/")
 
 	return &stein{
 		url:        url,
 		httpClient: httpClient,
 	}
-}
-
-func (s *stein) getFullURL(path string, params map[string]string) string {
-	if strings.HasPrefix(path, "/") {
-		path = strings.TrimPrefix(path, "/")
-	}
-	resource := fmt.Sprintf("%s/%s", s.url, path)
-
-	return s.addParams(resource, params)
-}
-
-func (s *stein) addParams(resource string, params map[string]string) string {
-	if len(params) == 0 {
-		return resource
-	}
-
-	resource = resource + "?"
-	for k, v := range params {
-		resource = resource + fmt.Sprintf("%s=%s&", k, v)
-	}
-
-	return strings.TrimSuffix(resource, "&")
 }
 
 func (s *stein) decodeJSON(r io.Reader, v interface{}) error {
@@ -69,16 +71,15 @@ func (s *stein) decodeJSON(r io.Reader, v interface{}) error {
 }
 
 // Get returns the rows in the given sheet
-func (s *stein) Get(sheet string, basicQuery BasicQuery) ([]map[string]interface{}, error) {
-	mapQuery := map[string]string{}
-	if basicQuery.Offset > 0 {
-		mapQuery["offset"] = fmt.Sprintf("%d", basicQuery.Offset)
-	}
-	if basicQuery.Limit > 0 {
-		mapQuery["limit"] = fmt.Sprintf("%d", basicQuery.Limit)
+func (s *stein) Get(sheet string, params SearchParams) ([]map[string]interface{}, error) {
+	resource := fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	
+	queryParams := params.queryString()
+	if queryParams != "" {
+		resource = resource + "?" + queryParams 
 	}
 
-	resource := s.getFullURL(sheet, mapQuery)
+	fmt.Printf("resource: %s\n", resource)
 
 	resp, err := s.httpClient.Get(resource)
 	if err != nil {
