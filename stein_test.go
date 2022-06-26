@@ -22,7 +22,7 @@ func Test_stein_Get(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(jsonBody))
+			_, _ = w.Write([]byte(jsonBody))
 		}))
 		defer ts.Close()
 
@@ -60,7 +60,7 @@ func Test_stein_Get(t *testing.T) {
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(jsonBody))
+			_, _ = w.Write([]byte(jsonBody))
 		}))
 		defer ts.Close()
 
