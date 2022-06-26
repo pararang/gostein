@@ -12,7 +12,7 @@ go get github.com/pararang/gostein
 ## Usage
 ```go
     ...
-	steinClient = gostein.New("http://yourstein.host/v1/storage/your-api-id", nil)
+    steinClient = gostein.New("http://yourstein.host/v1/storage/your-api-id", nil)
 
     data, err := steinClient.Get("sheet1", gostein.SearchParams{})
     if err != nil {
@@ -20,6 +20,7 @@ go get github.com/pararang/gostein
     }
 
     // do something with data
+    ...
 ```
 > If HTTP Client is not provided (nil) on the second parameter, `DefaultClient` from http golang stdlib will be used.
 
