@@ -77,7 +77,7 @@ func TestSearchParams_queryString(t *testing.T) {
 	t.Run("should return the correct query string", func(t *testing.T) {
 		params := SearchParams{
 			Offset: 20,
-			Limit: 10,
+			Limit:  10,
 			Conditions: map[string]string{
 				"column_1": "value_column_1",
 				"column_2": "value_column_2",
