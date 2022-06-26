@@ -1,5 +1,5 @@
-# gostein
-![Coverage](https://img.shields.io/badge/Coverage-87.8%25-brightgreen)
+# gostein [![GoReportCard](https://goreportcard.com/badge/github.com/pararang/gostein)](https://goreportcard.com/report/github.com/pararang/gostein) ![Coverage](https://img.shields.io/badge/Coverage-87.8%25-brightgreen) 
+
 
 [Stein](https://steinhq.com/) API wrapper for Go.
 
