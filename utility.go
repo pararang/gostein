@@ -1,4 +1,4 @@
-package stein
+package gostein
 
 import "strings"
 
