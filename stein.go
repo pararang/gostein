@@ -1,4 +1,4 @@
-package stein
+package gostein
 
 import (
 	"encoding/json"
@@ -15,6 +15,7 @@ type SearchParams struct {
 	Conditions map[string]string
 }
 
+// builds the query string from the given params with query string escaping
 func (sp SearchParams) queryString() string {
 	queryString := ""
 	if sp.Offset > 0 {
@@ -78,8 +79,6 @@ func (s *stein) Get(sheet string, params SearchParams) ([]map[string]interface{}
 	if queryParams != "" {
 		resource = resource + "?" + queryParams 
 	}
-
-	fmt.Printf("resource: %s\n", resource)
 
 	resp, err := s.httpClient.Get(resource)
 	if err != nil {
