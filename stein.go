@@ -10,8 +10,8 @@ import (
 )
 
 type SearchParams struct {
-	Offset int64
-	Limit  int64
+	Offset     int64
+	Limit      int64
 	Conditions map[string]string
 }
 
@@ -74,10 +74,10 @@ func (s *stein) decodeJSON(r io.Reader, v interface{}) error {
 // Get returns the rows in the given sheet
 func (s *stein) Get(sheet string, params SearchParams) ([]map[string]interface{}, error) {
 	resource := fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
-	
+
 	queryParams := params.queryString()
 	if queryParams != "" {
-		resource = resource + "?" + queryParams 
+		resource = resource + "?" + queryParams
 	}
 
 	resp, err := s.httpClient.Get(resource)

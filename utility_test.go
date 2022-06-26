@@ -107,4 +107,3 @@ func Test_removeSuffix(t *testing.T) {
 		})
 	}
 }
-
