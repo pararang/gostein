@@ -15,6 +15,7 @@ type SearchParams struct {
 	Conditions map[string]string
 }
 
+// builds the query string from the given params with query string escaping
 func (sp SearchParams) queryString() string {
 	queryString := ""
 	if sp.Offset > 0 {
