@@ -33,8 +33,8 @@ The `data` will be in type of `[]map[string]interface{}`. To convert the data to
 ...
 resp, err = steinClient.Add("sheet1",
     map[string]interface{}{
-        "title": "Escort Warrior 1",
-        "name":  "EW1",
+        "column_1": "value_1",
+        "column_2":  "value_2",
     })
 // handle err adn do something with resp
 ...
@@ -44,18 +44,18 @@ resp, err = steinClient.Add("sheet1",
 ```go
 resp, err := s.Add("gostein", 
     map[string]interface{}{
-        "title": "Escort Warrior 1",
-        "name":  "EW1",
+        "column_1": "value_1-a",
+        "column_2":  "value_2-a",
     }, 
     map[string]interface{}{
-        "title": "Escort Warrior 2",
-        "name":  "EW2",
+        "column_1": "value_1-b",
+        "column_2":  "value_2-b",
     })
 
 // with better code readability, utilize the variadic function definition
 rows := []map[string]interface{}{
-    {"name": "John", "age": 30},
-    {"name": "Jane", "age": 25},
+    {"column_1": "value_1-a", "column_2": "value_2-a"},
+    {"column_1": "value_1-b", "column_2": "value_2-b"},
 }
 
 resp, err = steinClient.Add("sheet1", rows...)
