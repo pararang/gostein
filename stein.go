@@ -15,6 +15,10 @@ type SearchParams struct {
 	Conditions map[string]string
 }
 
+type AddResponse struct {
+	UpdatedRange string `json:"updatedRange"`
+}
+
 // builds the query string from the given params with query string escaping
 func (sp SearchParams) queryString() string {
 	queryString := ""
@@ -43,6 +47,7 @@ func (sp SearchParams) queryString() string {
 // Interface is the interface for the stein client
 type Interface interface {
 	Get(sheet string, params SearchParams) ([]map[string]interface{}, error)
+	Add(sheet string, rows ...map[string]interface{}) (AddResponse, error)
 }
 
 type stein struct {
@@ -98,4 +103,32 @@ func (s *stein) Get(sheet string, params SearchParams) ([]map[string]interface{}
 	}
 
 	return data, nil
+}
+
+func (s *stein) Add(sheet string, rows ...map[string]interface{}) (AddResponse, error) {
+	resource := fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+
+	jsonRow, err := json.Marshal(rows)
+	if err != nil {
+		return AddResponse{}, err
+	}
+
+	resp, err := s.httpClient.Post(resource, "application/json", strings.NewReader(string(jsonRow)))
+	if err != nil {
+		return AddResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return AddResponse{}, ErrNot2XX{StatusCode: resp.StatusCode}
+	}
+
+	result := AddResponse{}
+	err = s.decodeJSON(resp.Body, &result)
+	if err != nil {
+		return AddResponse{}, ErrDecodeJSON{Err: err}
+	}
+
+	return result, nil
 }
