@@ -27,7 +27,7 @@ func Test_stein_Get(t *testing.T) {
 		defer ts.Close()
 
 		sc := New(ts.URL, nil)
-		resp, err := sc.Get("/sheetname", SearchParams{})
+		resp, err := sc.Get("/sheetname", GetParams{})
 		if err != nil {
 			t.Errorf("Error: %v", err)
 		}
@@ -47,7 +47,7 @@ func Test_stein_Get(t *testing.T) {
 		defer ts.Close()
 
 		sc := New(ts.URL, nil)
-		_, err := sc.Get("/sheetname", SearchParams{})
+		_, err := sc.Get("/sheetname", GetParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrNot2XX{}) {
 			t.Errorf("Expected ErrNot2XX, got %v", err)
@@ -65,7 +65,7 @@ func Test_stein_Get(t *testing.T) {
 		defer ts.Close()
 
 		sc := New(ts.URL, nil)
-		_, err := sc.Get("/sheetname", SearchParams{})
+		_, err := sc.Get("/sheetname", GetParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrDecodeJSON{}) {
 			t.Errorf("Expected ErrDecode, got %v", err)
@@ -75,10 +75,10 @@ func Test_stein_Get(t *testing.T) {
 
 func TestSearchParams_queryString(t *testing.T) {
 	t.Run("should return the correct query string", func(t *testing.T) {
-		params := SearchParams{
+		params := GetParams{
 			Offset: 20,
 			Limit:  10,
-			Conditions: map[string]string{
+			Search: map[string]string{
 				"column_1": "value_column_1",
 				"column_2": "value_column_2",
 			},

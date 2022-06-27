@@ -23,10 +23,10 @@ steinClient = gostein.New("http://yourstein.host/v1/storage/your-api-id", nil)
 ```go
 ...
 // Get all data
-data, err := steinClient.Get("sheet1", gostein.SearchParams{})
+data, err := steinClient.Get("sheet1", gostein.GetParams{})
 
 // Get with offset and limit
-data, err := steinClient.Get("sheet1", gostein.SearchParams{Offset: 0, Limit: 10})
+data, err := steinClient.Get("sheet1", gostein.GetParams{Offset: 0, Limit: 10})
 ...
 ```
 The `data` will be in type of `[]map[string]interface{}`. To convert the data to specific struct, I recomended using [maptostructure package](https://github.com/mitchellh/mapstructure).
@@ -34,9 +34,9 @@ The `data` will be in type of `[]map[string]interface{}`. To convert the data to
 #### Search data
 Look up rows in a sheet by a specific value on column(s).
 ```go
-data, err := steinClient.Get("sheet1", gostein.SearchParams{
+data, err := steinClient.Get("sheet1", gostein.GetParams{
     Limit: 10,
-    Conditions: map[string]string{
+    Search: map[string]string{
             "column_1": "value_column_1",
             "column_2": "value_column_2",
         }

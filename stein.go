@@ -9,10 +9,10 @@ import (
 	"strings"
 )
 
-type SearchParams struct {
-	Offset     int64
-	Limit      int64
-	Conditions map[string]string
+type GetParams struct {
+	Offset int64
+	Limit  int64
+	Search map[string]string
 }
 
 type AddResponse struct {
@@ -20,7 +20,7 @@ type AddResponse struct {
 }
 
 // builds the query string from the given params with query string escaping
-func (sp SearchParams) queryString() string {
+func (sp GetParams) queryString() string {
 	queryString := ""
 	if sp.Offset > 0 {
 		queryString = queryString + fmt.Sprintf("offset=%d&", sp.Offset)
@@ -30,8 +30,8 @@ func (sp SearchParams) queryString() string {
 		queryString = queryString + fmt.Sprintf("limit=%d&", sp.Limit)
 	}
 
-	if len(sp.Conditions) > 0 {
-		jsonSearch, err := json.Marshal(sp.Conditions)
+	if len(sp.Search) > 0 {
+		jsonSearch, err := json.Marshal(sp.Search)
 		if err != nil {
 			return ""
 		}
@@ -46,7 +46,7 @@ func (sp SearchParams) queryString() string {
 
 // Interface is the interface for the stein client
 type Interface interface {
-	Get(sheet string, params SearchParams) ([]map[string]interface{}, error)
+	Get(sheet string, params GetParams) ([]map[string]interface{}, error)
 	Add(sheet string, rows ...map[string]interface{}) (AddResponse, error)
 }
 
@@ -77,7 +77,7 @@ func (s *stein) decodeJSON(r io.Reader, v interface{}) error {
 }
 
 // Get returns the rows in the given sheet
-func (s *stein) Get(sheet string, params SearchParams) ([]map[string]interface{}, error) {
+func (s *stein) Get(sheet string, params GetParams) ([]map[string]interface{}, error) {
 	resource := fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
 
 	queryParams := params.queryString()
