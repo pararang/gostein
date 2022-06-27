@@ -1,4 +1,4 @@
-![Coverage](https://img.shields.io/badge/Coverage-87.5%25-brightgreen) [![GoReportCard](https://goreportcard.com/badge/github.com/pararang/gostein)](https://goreportcard.com/report/github.com/pararang/gostein) [![Go version of a Go module](https://img.shields.io/github/go-mod/go-version/pararang/gostein.svg)](https://github.com/pararang/gostein) [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/pararang/gostein/blob/main/LICENSE.md) [![Open Source](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](#)
+![Coverage](https://img.shields.io/badge/Coverage-87.5%25-brightgreen)
 # gostein
 
 [Stein](https://steinhq.com/) API wrapper for Go.
