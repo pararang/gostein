@@ -37,9 +37,9 @@ Look up rows in a sheet by a specific value on column(s).
 data, err := steinClient.Get("sheet1", gostein.SearchParams{
     Limit: 10,
     Conditions: map[string]string{
-				"column_1": "value_column_1",
-				"column_2": "value_column_2",
-			}
+            "column_1": "value_column_1",
+            "column_2": "value_column_2",
+        }
     })
 ...
 ```
