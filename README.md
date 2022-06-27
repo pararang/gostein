@@ -18,23 +18,40 @@ steinClient = gostein.New("http://yourstein.host/v1/storage/your-api-id", nil)
 ```
 > If HTTP Client is not provided (nil) on the second parameter, `DefaultClient` from http golang stdlib will be used.
 
-### Get/Search data
+### Read
+#### Get data
 ```go
 ...
+// Get all data
 data, err := steinClient.Get("sheet1", gostein.SearchParams{})
-// handle error and do something with data
+
+// Get with offset and limit
+data, err := steinClient.Get("sheet1", gostein.SearchParams{Offset: 0, Limit: 10})
 ...
 ```
 The `data` will be in type of `[]map[string]interface{}`. To convert the data to specific struct, I recomended using [maptostructure package](https://github.com/mitchellh/mapstructure).
 
-### Add data
+#### Search data
+Look up rows in a sheet by a specific value on column(s).
+```go
+data, err := steinClient.Get("sheet1", gostein.SearchParams{
+    Limit: 10,
+    Conditions: map[string]string{
+				"column_1": "value_column_1",
+				"column_2": "value_column_2",
+			}
+    })
+...
+```
+
+### Add
 #### Add single data
 ```go
 ...
 resp, err = steinClient.Add("sheet1",
     map[string]interface{}{
         "column_1": "value_1",
-        "column_2":  "value_2",
+        "column_2": "value_2",
     })
 // handle err adn do something with resp
 ...
