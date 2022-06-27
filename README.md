@@ -45,11 +45,11 @@ resp, err = steinClient.Add("sheet1",
 resp, err := s.Add("gostein", 
     map[string]interface{}{
         "column_1": "value_1-a",
-        "column_2":  "value_2-a",
+        "column_2": "value_2-a",
     }, 
     map[string]interface{}{
         "column_1": "value_1-b",
-        "column_2":  "value_2-b",
+        "column_2": "value_2-b",
     })
 
 // with better code readability, utilize the variadic function definition
