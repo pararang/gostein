@@ -114,58 +114,62 @@ func (s *stein) Get(sheet string, params GetParams) ([]map[string]interface{}, e
 }
 
 func (s *stein) Add(sheet string, rows ...map[string]interface{}) (WriteResponse, error) {
-	resource := fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	var (
+		result WriteResponse
+		resource = fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	)
 
 	jsonRow, err := json.Marshal(rows)
 	if err != nil {
-		return WriteResponse{}, err
+		return result, err
 	}
 
 	resp, err := s.httpClient.Post(resource, "application/json", strings.NewReader(string(jsonRow)))
 	if err != nil {
-		return WriteResponse{}, err
+		return result, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return WriteResponse{}, ErrNot2XX{StatusCode: resp.StatusCode}
+		return result, ErrNot2XX{StatusCode: resp.StatusCode}
 	}
 
-	result := WriteResponse{}
 	err = s.decodeJSON(resp.Body, &result)
 	if err != nil {
-		return WriteResponse{}, ErrDecodeJSON{Err: err}
+		return result, ErrDecodeJSON{Err: err}
 	}
 
 	return result, nil
 }
 
 func (s *stein) Update(sheet string, params UpdateParams) (WriteResponse, error) {
-	resource := fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	var (
+		result WriteResponse
+		resource = fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	)
 
 	payload, err := json.Marshal(params)
 	if err != nil {
-		return WriteResponse{}, err
+		return result, err
 	}
 
-	req, err := http.NewRequest("PUT", resource, bytes.NewBuffer(payload))
+	req, err := http.NewRequest(http.MethodPut, resource, bytes.NewBuffer(payload))
 	if err != nil {
-		return WriteResponse{}, err
+		return result, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		return WriteResponse{}, err
+		return result, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return WriteResponse{}, ErrNot2XX{StatusCode: resp.StatusCode}
+		return result, ErrNot2XX{StatusCode: resp.StatusCode}
 	}
 
-	result := WriteResponse{}
 	err = s.decodeJSON(resp.Body, &result)
 	if err != nil {
 		return WriteResponse{}, ErrDecodeJSON{Err: err}
