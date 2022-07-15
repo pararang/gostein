@@ -1,6 +1,7 @@
 package gostein
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,23 +16,19 @@ type GetParams struct {
 	Search map[string]string
 }
 
-type AddResponse struct {
-	UpdatedRange string `json:"updatedRange"`
-}
-
 // builds the query string from the given params with query string escaping
-func (sp GetParams) queryString() string {
+func (gp GetParams) queryString() string {
 	queryString := ""
-	if sp.Offset > 0 {
-		queryString = queryString + fmt.Sprintf("offset=%d&", sp.Offset)
+	if gp.Offset > 0 {
+		queryString = queryString + fmt.Sprintf("offset=%d&", gp.Offset)
 	}
 
-	if sp.Limit > 0 {
-		queryString = queryString + fmt.Sprintf("limit=%d&", sp.Limit)
+	if gp.Limit > 0 {
+		queryString = queryString + fmt.Sprintf("limit=%d&", gp.Limit)
 	}
 
-	if len(sp.Search) > 0 {
-		jsonSearch, err := json.Marshal(sp.Search)
+	if len(gp.Search) > 0 {
+		jsonSearch, err := json.Marshal(gp.Search)
 		if err != nil {
 			return ""
 		}
@@ -41,13 +38,24 @@ func (sp GetParams) queryString() string {
 		queryString = queryString + fmt.Sprintf("search=%s", querySearchJSON)
 	}
 
-	return strings.TrimSuffix(queryString, "&")
+	return removeSuffix(queryString, "&")
+}
+
+type WriteResponse struct {
+	UpdatedRange string `json:"updatedRange"`
+}
+
+type UpdateParams struct {
+	Condition map[string]string `json:"condition"`
+	Set       map[string]string `json:"set"`
+	Limit     int64             `json:"limit,omitempty"`
 }
 
 // Interface is the interface for the stein client
 type Interface interface {
 	Get(sheet string, params GetParams) ([]map[string]interface{}, error)
-	Add(sheet string, rows ...map[string]interface{}) (AddResponse, error)
+	Add(sheet string, rows ...map[string]interface{}) (WriteResponse, error)
+	Update(sheet string, params UpdateParams) (WriteResponse, error)
 }
 
 type stein struct {
@@ -105,29 +113,66 @@ func (s *stein) Get(sheet string, params GetParams) ([]map[string]interface{}, e
 	return data, nil
 }
 
-func (s *stein) Add(sheet string, rows ...map[string]interface{}) (AddResponse, error) {
-	resource := fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+func (s *stein) Add(sheet string, rows ...map[string]interface{}) (WriteResponse, error) {
+	var (
+		result WriteResponse
+		resource = fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	)
 
 	jsonRow, err := json.Marshal(rows)
 	if err != nil {
-		return AddResponse{}, err
+		return result, err
 	}
 
 	resp, err := s.httpClient.Post(resource, "application/json", strings.NewReader(string(jsonRow)))
 	if err != nil {
-		return AddResponse{}, err
+		return result, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return AddResponse{}, ErrNot2XX{StatusCode: resp.StatusCode}
+		return result, ErrNot2XX{StatusCode: resp.StatusCode}
 	}
 
-	result := AddResponse{}
 	err = s.decodeJSON(resp.Body, &result)
 	if err != nil {
-		return AddResponse{}, ErrDecodeJSON{Err: err}
+		return result, ErrDecodeJSON{Err: err}
+	}
+
+	return result, nil
+}
+
+func (s *stein) Update(sheet string, params UpdateParams) (WriteResponse, error) {
+	var (
+		result WriteResponse
+		resource = fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	)
+
+	payload, err := json.Marshal(params)
+	if err != nil {
+		return result, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, resource, bytes.NewBuffer(payload))
+	if err != nil {
+		return result, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return result, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return result, ErrNot2XX{StatusCode: resp.StatusCode}
+	}
+
+	err = s.decodeJSON(resp.Body, &result)
+	if err != nil {
+		return WriteResponse{}, ErrDecodeJSON{Err: err}
 	}
 
 	return result, nil

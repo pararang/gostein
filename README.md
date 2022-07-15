@@ -1,4 +1,4 @@
-![Coverage](https://img.shields.io/badge/Coverage-87.5%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-86.3%25-brightgreen)
 # gostein
 
 [Stein](https://steinhq.com/) API wrapper for Go.
