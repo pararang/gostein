@@ -144,3 +144,64 @@ func Test_stein_Add(t *testing.T) {
 		}
 	})
 }
+
+func Test_stein_Update(t *testing.T) {
+	t.Run("should return the correct response", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			jsonBody := `{"updatedRange": "Sheet1!A3:B3"}`
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(jsonBody))
+		}))
+		defer ts.Close()
+
+		sc := New(ts.URL, nil)
+		resp, err := sc.Update("Sheet1", UpdateParams{
+			Condition: map[string]string{
+				"column_1": "if_has_this_value",
+			},
+			Set: map[string]string{
+				"column_2": "then_update_this_colum_value",
+			},
+			Limit: 10,
+		})
+		if err != nil {
+			t.Errorf("Error: %v", err)
+		}
+
+		assert.Equal(t, "Sheet1!A3:B3", resp.UpdatedRange)
+	})
+
+	t.Run("should return error if http code not 2xx", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusForbidden)
+		}))
+		defer ts.Close()
+
+		sc := New(ts.URL, nil)
+		_, err := sc.Update("sheetname", UpdateParams{})
+		assert.NotNil(t, err)
+		if !errors.As(err, &ErrNot2XX{}) {
+			t.Errorf("Expected ErrNot2XX, got %v", err)
+		}
+	})
+
+	t.Run("should return error on failed decode the response", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			jsonBody := `bad json`
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(jsonBody))
+		}))
+		defer ts.Close()
+
+		sc := New(ts.URL, nil)
+		_, err := sc.Update("/sheetname", UpdateParams{})
+		assert.NotNil(t, err)
+		if !errors.As(err, &ErrDecodeJSON{}) {
+			t.Errorf("Expected ErrDecode, got %v", err)
+		}
+	})
+}
