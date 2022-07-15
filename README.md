@@ -53,7 +53,7 @@ resp, err = steinClient.Add("sheet1",
         "column_1": "value_1",
         "column_2": "value_2",
     })
-// handle err adn do something with resp
+// handle err and do something with resp
 ...
 ```
 
@@ -79,11 +79,45 @@ resp, err = steinClient.Add("sheet1", rows...)
 // handle err then do something with resp
 ...
 ```
+### Update
+#### Update single row
+`Limit 1` indicate to update only the first row that match the `Condition`.
+```go
+...
+resp, err := sc.Update("Sheet1", UpdateParams{
+			Condition: map[string]string{
+				"column_1": "if_has_this_value",
+			},
+			Set: map[string]string{
+				"column_2": "then_update_this_colum_value",
+			},
+			Limit: 1,
+		})
+// handle err and do something with resp
+...
+```
+#### Update with multiple condition
+All `Condition` will be translated to `AND` condition.
+```go
+...
+resp, err := sc.Update("Sheet1", UpdateParams{
+			Condition: map[string]string{
+				"column_1": "if_has_this_value",
+				"column_3": "and_if_has_this_value",
+			},
+			Set: map[string]string{
+				"column_2": "then_update_this_colum_value",
+			},
+		})
+// handle err and do something with resp
+...
+```
+> :warning: **If `Limit` is not set, all rows those match the `Condition` will be updated.**
 
 ## TODO
 - [x] Read data (https://docs.steinhq.com/read-data)
 - [x] Read data with conditions (https://docs.steinhq.com/search-data)
 - [x] Add data (https://docs.steinhq.com/add-rows)
-- [ ] Update data (https://docs.steinhq.com/update-rows)
+- [x] Update data (https://docs.steinhq.com/update-rows)
 - [ ] Delete data (https://docs.steinhq.com/delete-rows)
 - [ ] Authentication (https://docs.steinhq.com/authentication)
