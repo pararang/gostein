@@ -26,7 +26,7 @@ func Test_stein_Get(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		resp, err := sc.Get("/sheetname", GetParams{})
 		if err != nil {
 			t.Errorf("Error: %v", err)
@@ -42,11 +42,11 @@ func Test_stein_Get(t *testing.T) {
 
 	t.Run("should return error if http code not 2xx", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		_, err := sc.Get("/sheetname", GetParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrNot2XX{}) {
@@ -64,7 +64,7 @@ func Test_stein_Get(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		_, err := sc.Get("/sheetname", GetParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrDecodeJSON{}) {
@@ -100,7 +100,7 @@ func Test_stein_Add(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		resp, err := sc.Add("Sheet1", map[string]interface{}{
 			"column_1": "value_column_1",
 			"column_2": "value_column_2",
@@ -109,16 +109,16 @@ func Test_stein_Add(t *testing.T) {
 			t.Errorf("Error: %v", err)
 		}
 
-		assert.Equal(t, "Sheet1!A3:B3", resp.UpdatedRange)
+		assert.Equal(t, "Sheet1!A3:B3", resp)
 	})
 
 	t.Run("should return error if http code not 2xx", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		_, err := sc.Add("sheetname", map[string]interface{}{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrNot2XX{}) {
@@ -136,7 +136,7 @@ func Test_stein_Add(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		_, err := sc.Add("/sheetname", map[string]interface{}{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrDecodeJSON{}) {
@@ -148,7 +148,7 @@ func Test_stein_Add(t *testing.T) {
 func Test_stein_Update(t *testing.T) {
 	t.Run("should return the correct response", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			jsonBody := `{"updatedRange": "Sheet1!A3:B3"}`
+			jsonBody := `{"totalUpdatedRows": 12}`
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -156,7 +156,7 @@ func Test_stein_Update(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		resp, err := sc.Update("Sheet1", UpdateParams{
 			Condition: map[string]string{
 				"column_1": "if_has_this_value",
@@ -170,17 +170,17 @@ func Test_stein_Update(t *testing.T) {
 			t.Errorf("Error: %v", err)
 		}
 
-		assert.Equal(t, "Sheet1!A3:B3", resp.UpdatedRange)
+		assert.Equal(t, int64(12), resp)
 	})
 
 	t.Run("should return error if http code not 2xx", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
-		_, err := sc.Update("sheetname", UpdateParams{})
+		sc := New(ts.URL, nil, nil)
+		_, err := sc.Update("sheetname", UpdateParams{Set: map[string]string{}})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrNot2XX{}) {
 			t.Errorf("Expected ErrNot2XX, got %v", err)
@@ -197,8 +197,8 @@ func Test_stein_Update(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
-		_, err := sc.Update("/sheetname", UpdateParams{})
+		sc := New(ts.URL, nil, nil)
+		_, err := sc.Update("/sheetname", UpdateParams{Set: map[string]string{}})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrDecodeJSON{}) {
 			t.Errorf("Expected ErrDecode, got %v", err)
@@ -217,7 +217,7 @@ func Test_stein_Delete(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		resp, err := sc.Delete("Sheet1", DeleteParams{})
 		if err != nil {
 			t.Errorf("Error: %v", err)
@@ -228,11 +228,11 @@ func Test_stein_Delete(t *testing.T) {
 
 	t.Run("should return error if http code not 2xx", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		_, err := sc.Delete("sheetname", DeleteParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrNot2XX{}) {
@@ -250,7 +250,7 @@ func Test_stein_Delete(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		sc := New(ts.URL, nil)
+		sc := New(ts.URL, nil, nil)
 		_, err := sc.Delete("/sheetname", DeleteParams{})
 		assert.NotNil(t, err)
 		if !errors.As(err, &ErrDecodeJSON{}) {
@@ -258,3 +258,4 @@ func Test_stein_Delete(t *testing.T) {
 		}
 	})
 }
+
