@@ -58,7 +58,7 @@ type DeleteParams struct {
 	Limit     int64             `json:"limit,omitempty"`
 }
 
-type AuthParams struct {
+type BasicAuth struct {
 	Username string
 	Password string
 }
@@ -74,13 +74,13 @@ type Interface interface {
 type stein struct {
 	url        string
 	httpClient *http.Client
-	basicAuth  *AuthParams
+	basicAuth  *BasicAuth
 }
 
 // New creates a new stein client
 // url is the base url of the stein api. i.e: https://api.steinhq.com/v1/storages/[your-api-id]
 // httpClient is the http client to use. If nil, http.DefaultClient will be used
-func New(url string, httpClient *http.Client, basicAuth *AuthParams) Interface {
+func New(url string, httpClient *http.Client, basicAuth *BasicAuth) Interface {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
