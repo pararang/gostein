@@ -10,10 +10,16 @@ import (
 	"strings"
 )
 
+// UpsertResponse is the response from the either Update or Insert/add operation
+type UpsertResponse struct {
+	UpdatedRange string `json:"updatedRange"`
+}
+
+// GetParams is the parameters for the read operations: Get or search
 type GetParams struct {
 	Offset int64
 	Limit  int64
-	Search map[string]string
+	Condition map[string]string
 }
 
 // builds the query string from the given params with query string escaping
@@ -27,8 +33,8 @@ func (gp GetParams) queryString() string {
 		queryString = queryString + fmt.Sprintf("limit=%d&", gp.Limit)
 	}
 
-	if len(gp.Search) > 0 {
-		jsonSearch, err := json.Marshal(gp.Search)
+	if len(gp.Condition) > 0 {
+		jsonSearch, err := json.Marshal(gp.Condition)
 		if err != nil {
 			return ""
 		}
@@ -41,21 +47,25 @@ func (gp GetParams) queryString() string {
 	return removeSuffix(queryString, "&")
 }
 
-type WriteResponse struct {
-	UpdatedRange string `json:"updatedRange"`
-}
-
+// UpdateParams is the parameters for the update operation
 type UpdateParams struct {
 	Condition map[string]string `json:"condition"`
 	Set       map[string]string `json:"set"`
 	Limit     int64             `json:"limit,omitempty"`
 }
 
+// DeleteParams is the parameters for the delete operation
+type DeleteParams struct {
+	Condition map[string]string `json:"condition"`
+	Limit     int64             `json:"limit,omitempty"`
+}
+
 // Interface is the interface for the stein client
 type Interface interface {
 	Get(sheet string, params GetParams) ([]map[string]interface{}, error)
-	Add(sheet string, rows ...map[string]interface{}) (WriteResponse, error)
-	Update(sheet string, params UpdateParams) (WriteResponse, error)
+	Add(sheet string, rows ...map[string]interface{}) (UpsertResponse, error)
+	Update(sheet string, params UpdateParams) (UpsertResponse, error)
+	Delete(sheet string, params DeleteParams) (countDeletedRows int64, err error)
 }
 
 type stein struct {
@@ -113,9 +123,9 @@ func (s *stein) Get(sheet string, params GetParams) ([]map[string]interface{}, e
 	return data, nil
 }
 
-func (s *stein) Add(sheet string, rows ...map[string]interface{}) (WriteResponse, error) {
+func (s *stein) Add(sheet string, rows ...map[string]interface{}) (UpsertResponse, error) {
 	var (
-		result WriteResponse
+		result UpsertResponse
 		resource = fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
 	)
 
@@ -143,9 +153,9 @@ func (s *stein) Add(sheet string, rows ...map[string]interface{}) (WriteResponse
 	return result, nil
 }
 
-func (s *stein) Update(sheet string, params UpdateParams) (WriteResponse, error) {
+func (s *stein) Update(sheet string, params UpdateParams) (UpsertResponse, error) {
 	var (
-		result WriteResponse
+		result UpsertResponse
 		resource = fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
 	)
 
@@ -172,8 +182,46 @@ func (s *stein) Update(sheet string, params UpdateParams) (WriteResponse, error)
 
 	err = s.decodeJSON(resp.Body, &result)
 	if err != nil {
-		return WriteResponse{}, ErrDecodeJSON{Err: err}
+		return UpsertResponse{}, ErrDecodeJSON{Err: err}
 	}
 
 	return result, nil
+}
+
+func (s *stein) Delete(sheet string, params DeleteParams) (countDeletedRows int64, err error) {
+	var (
+		result = struct {
+			CountDeletedRows int64 `json:"clearedRowsCount"`
+		}{}
+
+		resource = fmt.Sprintf("%s/%s", s.url, removePrefix(sheet, "/"))
+	)
+
+	payload, err := json.Marshal(params)
+	if err != nil {
+		return countDeletedRows, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, resource, bytes.NewBuffer(payload))
+	if err != nil {
+		return countDeletedRows, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return countDeletedRows, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return countDeletedRows, ErrNot2XX{StatusCode: resp.StatusCode}
+	}
+
+	err = s.decodeJSON(resp.Body, &result)
+	if err != nil {
+		return countDeletedRows, ErrDecodeJSON{Err: err}
+	}
+
+	return result.CountDeletedRows, nil
 }
