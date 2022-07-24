@@ -14,7 +14,16 @@ go get github.com/pararang/gostein
 ```go
 import "github.com/pararang/gostein"
 ...
-steinClient = gostein.New("http://yourstein.host/v1/storage/your-api-id", nil)
+steinClient = gostein.New("http://yourstein.host/v1/storage/your-api-id", nil, nil)
+
+// with basic auth
+steinClient = gostein.New(
+    "http://yourstein.host/v1/storage/your-api-id", 
+    nil, 
+    &AuthParams{
+		Username: "pararang",
+		Password: "pararang123",
+	})
 ```
 > If HTTP Client is not provided (nil) on the second parameter, `DefaultClient` from http golang stdlib will be used.
 
@@ -150,4 +159,4 @@ resp, err := sc.Delete("Sheet1", DeleteParams{
 - [x] Add data (https://docs.steinhq.com/add-rows)
 - [x] Update data (https://docs.steinhq.com/update-rows)
 - [x] Delete data (https://docs.steinhq.com/delete-rows)
-- [ ] Authentication (https://docs.steinhq.com/authentication)
+- [x] Authentication (https://docs.steinhq.com/authentication)
