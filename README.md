@@ -97,7 +97,7 @@ resp, err := sc.Update("Sheet1", UpdateParams{
 // handle err and do something with resp
 ...
 ```
-#### Update with multiple condition
+#### Update with multiple conditions
 All `Condition` will be translated to `AND` condition.
 ```go
 ...
@@ -117,7 +117,7 @@ resp, err := sc.Update("Sheet1", UpdateParams{
 ### Delete
 The delete operation return int64 that indicate the number of rows that was deleted.
 #### Delete single row
-`Limit 1` indicate to update only the first row that match the `Condition`.
+`Limit 1` indicate to delete only the first row that match the `Condition`.
 ```go
 ...
 resp, err := sc.Delete("Sheet1", DeleteParams{
@@ -129,7 +129,7 @@ resp, err := sc.Delete("Sheet1", DeleteParams{
 // handle err and do something with resp
 ...
 ```
-#### Update with multiple condition
+#### Delete with multiple conditions
 All `Condition` will be translated to `AND` condition.
 ```go
 ...
