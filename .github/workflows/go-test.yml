@@ -1,4 +1,4 @@
-name: "Go Test"
+name: "Test and Review"
 
 on:
   pull_request:
