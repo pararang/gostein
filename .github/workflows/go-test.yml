@@ -10,6 +10,14 @@ on:
   #     - feat/*
 
 jobs:
+  reviewdog:
+    name: "Reviewdog"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout repository"
+      uses: actions/checkout@v3
+    - name: Run golangci-lint with reviewdog
+      uses: reviewdog/action-golangci-lint@v2.1.7
   test:
     runs-on: ubuntu-latest
     strategy:
