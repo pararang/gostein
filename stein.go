@@ -197,6 +197,7 @@ func (s *stein) Add(sheet string, rows ...map[string]interface{}) (usedSheetRang
 	return result.UsedSheetRange, nil
 }
 
+// Update updates the rows in the given sheet
 func (s *stein) Update(sheet string, params UpdateParams) (countUpdatedRows int64, err error) {
 	var (
 		result = struct {
