@@ -26,7 +26,7 @@ jobs:
       - name: Setup reviewdog
         # uses: reviewdog/action-setup@v1
         run: |
-          go install ./cmd/reviewdog
+          go install .
 
       - name: Run reviewdog
         env:
@@ -82,7 +82,7 @@ jobs:
       - name: Setup reviewdog
         # uses: reviewdog/action-setup@v1
         run: |
-          go install ./cmd/reviewdog
+          go install .
 
       - name: Run reviewdog (github-pr-check)
         continue-on-error: true
@@ -247,28 +247,3 @@ jobs:
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
-
-  alex:
-    name: runner / alex
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: reviewdog/action-alex@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-check
-          level: info
-
-  textlint:
-    name: runner / textlint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: reviewdog/action-setup@v1
-      - run: npm install
-      - name: textlint
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $(npm bin)/textlint -f checkstyle README.md | \
-            reviewdog -f=checkstyle -name="textlint" -reporter=github-check -level=info
