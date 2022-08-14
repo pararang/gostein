@@ -1,4 +1,4 @@
-name: "Compatibility and Lint"
+name: "Compatibility Test"
 
 on:
   pull_request:
@@ -18,14 +18,14 @@ jobs:
   #       uses: actions/checkout@v3
   #     - name: actionlint with reviewdog
   #       uses: reviewdog/action-actionlint@v1.27.0
-  golangci-lint:
-    name: "Linting"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3.2.0
+  # golangci-lint:
+  #   name: "Linting"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Run golangci-lint
+  #       uses: golangci/golangci-lint-action@v3.2.0
   compatibility-test:
     runs-on: ubuntu-latest
     strategy:
