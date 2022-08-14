@@ -228,10 +228,11 @@ func (s *stein) Update(sheet string, params UpdateParams) (countUpdatedRows int6
 
 	defer resp.Body.Close()
 
-	err = s.validateResponse(resp)
-	if err != nil {
-		return result.TotalUpdatedRows, err
-	}
+	s.validateResponse(resp)
+	// err = s.validateResponse(resp)
+	// if err != nil {
+	// 	return result.TotalUpdatedRows, err
+	// }
 
 	s.decodeJSON(resp.Body, &result)
 	// err = s.decodeJSON(resp.Body, &result)
