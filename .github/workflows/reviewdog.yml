@@ -2,7 +2,7 @@ name: reviewdog
 on: [pull_request]
 jobs:
   misspell:
-    name: runner / misspell
+    name: misspell
     runs-on: ubuntu-latest
     steps:
       - name: Check out code.
@@ -13,7 +13,7 @@ jobs:
           github_token: ${{ secrets.github_token }}
           locale: "US"
   golangci-lint:
-    name: runner / golangci-lint
+    name: golangci-lint
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
