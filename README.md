@@ -153,10 +153,3 @@ resp, err := sc.Delete("Sheet1", DeleteParams{
 ```
 > :warning: **If `Limit` is not set, all rows those match the `Condition` will be deleted.**
 
-## TODO
-- [x] Read data (https://docs.steinhq.com/read-data)
-- [x] Read data with conditions (https://docs.steinhq.com/search-data)
-- [x] Add data (https://docs.steinhq.com/add-rows)
-- [x] Update data (https://docs.steinhq.com/update-rows)
-- [x] Delete data (https://docs.steinhq.com/delete-rows)
-- [x] Authentication (https://docs.steinhq.com/authentication)
