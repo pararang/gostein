@@ -20,7 +20,7 @@ steinClient = gostein.New("http://yourstein.host/v1/storage/your-api-id", nil, n
 steinClient = gostein.New(
     "http://yourstein.host/v1/storage/your-api-id", 
     nil, 
-    &AuthParams{
+    &gostein.BasicAuth{
 		Username: "pararang",
 		Password: "pararang123",
 	})
